@@ -157,6 +157,9 @@ function wrapObservable(pluginObj: any, methodName: string, args: any[], opts: a
       try {
         if (opts.clearFunction) {
           if (opts.clearWithArgs) {
+            if (typeof opts.clearParamIndex !== 'undefined') {
+              return get(window, pluginObj.pluginRef)[opts.clearFunction].apply(pluginObj, [args[opts.clearParamIndex]]);
+            }
             return get(window, pluginObj.pluginRef)[opts.clearFunction].apply(pluginObj, args);
           }
           return get(window, pluginObj.pluginRef)[opts.clearFunction].call(pluginObj, pluginResult);
@@ -185,6 +188,9 @@ function wrapInstance(pluginObj: any, methodName: string, opts: any = {}) {
         return () => {
           try {
             if (opts.clearWithArgs) {
+              if (typeof opts.clearParamIndex !== 'undefined') {
+                return pluginObj._objectInstance[opts.clearFunction].apply(pluginObj._objectInstance, [args[opts.clearParamIndex]]);
+              }
               return pluginObj._objectInstance[opts.clearFunction].apply(pluginObj._objectInstance, args);
             }
             return pluginObj._objectInstance[opts.clearFunction].call(pluginObj, pluginResult);

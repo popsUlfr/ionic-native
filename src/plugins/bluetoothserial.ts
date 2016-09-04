@@ -28,7 +28,7 @@ import { Observable } from 'rxjs/Observable';
  * ```
  */
 @Plugin({
-  repo: 'https://github.com/don/BluetoothSerial',
+  repo: 'https://github.com/popsUlfr/BluetoothSerial',
   plugin: 'cordova-plugin-bluetooth-serial',
   pluginRef: 'bluetoothSerial',
   platforms: ['Android', 'iOS', 'Windows Phone', 'Browser']
@@ -43,7 +43,8 @@ export class BluetoothSerial {
   @Cordova({
     platforms: ['Android', 'iOS', 'Windows Phone'],
     observable: true,
-    clearFunction: 'disconnect'
+    clearFunction: 'disconnect',
+    clearWithArgs: true
   })
   static connect(macAddress_or_uuid: string): Observable<any> { return; }
 
@@ -55,78 +56,129 @@ export class BluetoothSerial {
   @Cordova({
     platforms: ['Android'],
     observable: true,
-    clearFunction: 'disconnect'
+    clearFunction: 'disconnect',
+    clearWithArgs: true
   })
   static connectInsecure(macAddress: string): Observable<any> { return; }
 
   /**
+  * Disconnects the current connection.
+  * @param {string} macAddress_or_uuid Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
+  * @returns {Promise} returns a promise when disconnection succeeded or failed
+  */
+  @Cordova({
+    callbackOrder: 'reverse'
+  })
+  static disconnect(macAddress_or_uuid?: string): Promise<any> { return; }
+
+  /**
    * Writes data to the serial port
    * @param {any} data ArrayBuffer of data
+   * @param {string} macAddress Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
    * @returns {Promise} returns a promise when data has been written
    */
   @Cordova({
-    platforms: ['Android', 'iOS', 'Windows Phone']
+    platforms: ['Android', 'iOS', 'Windows Phone'],
+    successIndex: 1,
+    errorIndex: 2
   })
-  static write(data: any): Promise<any> { return; }
+  static write(data: any, macAddress?: string): Promise<any> { return; }
 
   /**
    * Gets the number of bytes of data available
+   * @param {string} macAddress Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
    * @returns {Promise} returns a promise that contains the available bytes
    */
   @Cordova({
-    platforms: ['Android', 'iOS', 'Windows Phone']
-  }) static available(): Promise<any> { return; }
+    platforms: ['Android', 'iOS', 'Windows Phone'],
+    callbackOrder: 'reverse'
+  }) static available(macAddress?: string): Promise<any> { return; }
 
   /**
    * Reads data from the buffer
+   * @param {string} macAddress Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
    * @returns {Promise} returns a promise with data from the buffer
    */
   @Cordova({
-    platforms: ['Android', 'iOS', 'Windows Phone']
+    platforms: ['Android', 'iOS', 'Windows Phone'],
+    callbackOrder: 'reverse'
   })
-  static read(): Promise<any> { return; }
+  static read(macAddress?: string): Promise<any> { return; }
 
   /**
    * Reads data from the buffer until it reaches a delimiter
    * @param {string} delimiter string that you want to search until
+   * @param {string} macAddress Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
    * @returns {Promise} returns a promise
    */
   @Cordova({
-    platforms: ['Android', 'iOS', 'Windows Phone']
+    platforms: ['Android', 'iOS', 'Windows Phone'],
+    successIndex: 1,
+    errorIndex: 2
   })
-  static readUntil(delimiter: string): Promise<any> { return; }
+  static readUntil(delimiter: string, macAddress?: string): Promise<any> { return; }
 
   /**
    * Subscribe to be notified when data is received
    * @param {string} delimiter the string you want to watch for
+   * @param {string} macAddress Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
    * @returns {Observable} returns an observable.
    */
   @Cordova({
     platforms: ['Android', 'iOS', 'Windows Phone'],
     observable: true,
-    clearFunction: 'unsubscribe'
+    clearFunction: 'unsubscribe',
+    clearWithArgs: true,
+    clearParamIndex: 1,
+    successIndex: 1,
+    errorIndex: 2
   })
-  static subscribe(delimiter: string): Observable<any> { return; }
+  static subscribe(delimiter: string, macAddress?: string): Observable<any> { return; }
+
+  /**
+  * Unsubscribe from a subscription.
+  * @param {string} macAddress Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
+  * @returns {Promise} returns a promise
+  */
+  @Cordova({
+    callbackOrder: 'reverse'
+  })
+  static unsubscribe(macAddress?: string): Promise<any> { return; }
 
   /**
    * Subscribe to be notified when data is received
+   * @param {string} macAddress Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
    * @returns {Observable} returns an observable
    */
   @Cordova({
     platforms: ['Android', 'iOS', 'Windows Phone'],
     observable: true,
-    clearFunction: 'unsubscribeRawData'
+    clearFunction: 'unsubscribeRawData',
+    clearWithArgs: true,
+    callbackOrder: 'reverse'
   })
-  static subscribeRawData(): Observable<any> { return; }
+  static subscribeRawData(macAddress?: string): Observable<any> { return; }
+
+  /**
+  * Unsubscribe from a raw data subscription.
+  * @param {string} macAddress Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
+  * @returns {Promise} returns a promise
+  */
+  @Cordova({
+    callbackOrder: 'reverse'
+  })
+  static unsubscribeRawData(macAddress?: string): Promise<any> { return; }
 
   /**
    * Clears data in buffer
+   * @param {string} macAddress Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
    * @returns {Promise} returns a promise when completed
    */
   @Cordova({
-    platforms: ['Android', 'iOS', 'Windows Phone']
+    platforms: ['Android', 'iOS', 'Windows Phone'],
+    callbackOrder: 'reverse'
   })
-  static clear(): Promise<any> { return; }
+  static clear(macAddress?: string): Promise<any> { return; }
 
   /**
    * Lists bonded devices
@@ -148,21 +200,25 @@ export class BluetoothSerial {
 
   /**
    * Reports the connection status
+   * @param {string} macAddress Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
    * @returns {Promise} returns a promise
    */
   @Cordova({
-    platforms: ['Android', 'iOS', 'Windows Phone']
+    platforms: ['Android', 'iOS', 'Windows Phone'],
+    callbackOrder: 'reverse'
   })
-  static isConnected(): Promise<any> { return; }
+  static isConnected(macAddress?: string): Promise<any> { return; }
 
   /**
    * Reads the RSSI from the connected peripheral
+   * @param {string} macAddress Identifier of the remote device, if not specified the identifier of the last connect or connectInsecure is used. [optional]
    * @returns {Promise} returns a promise
    */
   @Cordova({
-    platforms: ['Android', 'iOS', 'Windows Phone']
+    platforms: ['Android', 'iOS', 'Windows Phone'],
+    callbackOrder: 'reverse'
   })
-  static readRSSI(): Promise<any> { return; }
+  static readRSSI(macAddress?: string): Promise<any> { return; }
 
   /**
    * Show the Bluetooth settings on the device
