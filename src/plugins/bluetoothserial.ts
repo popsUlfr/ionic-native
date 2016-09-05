@@ -282,4 +282,24 @@ export class BluetoothSerial {
   })
   static setDiscoverable(discoverableDuration: number): void { }
 
+  /**
+   * Initiate pairing with a Bluetooth device
+   * @param {string} macAddress Identifier of the remote device
+   * @param {string} pin PIN number of the remote device [optional]
+   * @returns {Promise} returns a promise
+   */
+  @Cordova({
+    platforms: ['Android']
+  })
+  static pair(macAddress: string, pin?: string): Promise<any> { return; }
+
+  /**
+   * Initiate unpairing with a Bluetooth device
+   * @param {string} macAddress Identifier of the remote device
+   * @returns {Promise} returns a promise
+   */
+  @Cordova({
+    platforms: ['Android']
+  })
+  static unpair(macAddress: string): Promise<any> { return; }
 }
