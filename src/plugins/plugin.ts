@@ -80,6 +80,17 @@ function setIndex(args: any[], opts: any = {}, resolve?: Function, reject?: Func
   return args;
 }
 
+function clearFunctionSetIndex(args: any[], opts: any = {}, resolve?: Function, reject?: Function): any {
+  let newOpts: any = {};
+  for (let key in opts) {
+    newOpts[key] = opts[key];
+    // clearFunction specific options prefixed by clear like clearCallbackOrder are converted to callbackOrder
+    if (key.length > 5 && key.startsWith('clear'))
+      newOpts[key.charAt(5).toLowerCase() + key.substring(6)] = opts[key];
+  }
+  return setIndex(args, newOpts, resolve, reject);
+}
+
 function callCordovaPlugin(pluginObj: any, methodName: string, args: any[], opts: any = {}, resolve?: Function, reject?: Function) {
   // Try to figure out where the success/error callbacks need to be bound
   // to our promise resolve/reject handlers.
@@ -149,7 +160,12 @@ function wrapOtherPromise(pluginObj: any, methodName: string, args: any[], opts:
 
 function wrapObservable(pluginObj: any, methodName: string, args: any[], opts: any = {}) {
   return new Observable(observer => {
-    let pluginResult = callCordovaPlugin(pluginObj, methodName, args, opts, observer.next.bind(observer), observer.error.bind(observer));
+    let observerNext = observer.next.bind(observer);
+    let observerError = observer.error.bind(observer);
+    if (opts.clearWithArgs) {
+      var clearArgs = clearFunctionSetIndex(((typeof opts.clearParamIndex !== 'undefined') ? [args[opts.clearParamIndex]] : args.slice()), opts, observerNext, observerError);
+    }
+    let pluginResult = callCordovaPlugin(pluginObj, methodName, args, opts, observerNext, observerError);
     if (pluginResult && pluginResult.error) {
       observer.error(pluginResult.error);
     }
@@ -157,10 +173,7 @@ function wrapObservable(pluginObj: any, methodName: string, args: any[], opts: a
       try {
         if (opts.clearFunction) {
           if (opts.clearWithArgs) {
-            if (typeof opts.clearParamIndex !== 'undefined') {
-              return get(window, pluginObj.pluginRef)[opts.clearFunction].apply(pluginObj, [args[opts.clearParamIndex]]);
-            }
-            return get(window, pluginObj.pluginRef)[opts.clearFunction].apply(pluginObj, args);
+            return get(window, pluginObj.pluginRef)[opts.clearFunction].apply(pluginObj, clearArgs);
           }
           return get(window, pluginObj.pluginRef)[opts.clearFunction].call(pluginObj, pluginResult);
         }
@@ -184,14 +197,16 @@ function wrapInstance(pluginObj: any, methodName: string, opts: any = {}) {
       return callInstance(pluginObj, methodName, args, opts);
     } else if (opts.observable) {
       return new Observable(observer => {
+        let observerNext = observer.next.bind(observer);
+        let observerError = observer.error.bind(observer);
+        if (opts.clearWithArgs) {
+          var clearArgs = clearFunctionSetIndex(((typeof opts.clearParamIndex !== 'undefined') ? [args[opts.clearParamIndex]] : args.slice()), opts, observerNext, observerError);
+        }
         let pluginResult = callInstance(pluginObj, methodName, args, opts, observer.next.bind(observer), observer.error.bind(observer));
         return () => {
           try {
             if (opts.clearWithArgs) {
-              if (typeof opts.clearParamIndex !== 'undefined') {
-                return pluginObj._objectInstance[opts.clearFunction].apply(pluginObj._objectInstance, [args[opts.clearParamIndex]]);
-              }
-              return pluginObj._objectInstance[opts.clearFunction].apply(pluginObj._objectInstance, args);
+              return pluginObj._objectInstance[opts.clearFunction].apply(pluginObj._objectInstance, clearArgs);
             }
             return pluginObj._objectInstance[opts.clearFunction].call(pluginObj, pluginResult);
           } catch (e) {

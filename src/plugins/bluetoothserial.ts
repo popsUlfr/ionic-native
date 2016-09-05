@@ -44,7 +44,8 @@ export class BluetoothSerial {
     platforms: ['Android', 'iOS', 'Windows Phone'],
     observable: true,
     clearFunction: 'disconnect',
-    clearWithArgs: true
+    clearWithArgs: true,
+    clearCallbackOrder: 'reverse'
   })
   static connect(macAddress_or_uuid: string): Observable<any> { return; }
 
@@ -57,7 +58,8 @@ export class BluetoothSerial {
     platforms: ['Android'],
     observable: true,
     clearFunction: 'disconnect',
-    clearWithArgs: true
+    clearWithArgs: true,
+    clearCallbackOrder: 'reverse'
   })
   static connectInsecure(macAddress: string): Observable<any> { return; }
 
@@ -130,6 +132,7 @@ export class BluetoothSerial {
     clearFunction: 'unsubscribe',
     clearWithArgs: true,
     clearParamIndex: 1,
+    clearCallbackOrder: 'reverse',
     successIndex: 1,
     errorIndex: 2
   })
@@ -155,6 +158,7 @@ export class BluetoothSerial {
     observable: true,
     clearFunction: 'unsubscribeRawData',
     clearWithArgs: true,
+    clearCallbackOrder: 'reverse',
     callbackOrder: 'reverse'
   })
   static subscribeRawData(macAddress?: string): Observable<any> { return; }
